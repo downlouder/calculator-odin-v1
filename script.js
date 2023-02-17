@@ -1,13 +1,14 @@
-const allButtons = document.querySelectorAll('button');
-const numbers = document.querySelectorAll('.number');
-const operators = document.querySelectorAll('.operator');
-const input = document.getElementById('input');
-
 function calculator() {
-    let firstNumber = '';
-    let secondNumber = '';
-    let currentOperator = '';
-    let isFinish = false;
+    const numbers = document.querySelectorAll('.number');
+    const operations = document.querySelectorAll('.operation');
+    const equalBtn = document.querySelector('#equal');
+    const eraseBtn = document.querySelector('#erase');
+    const clearBtn = document.querySelector('#ac');
+    const brackets = document.querySelectorAll('.brackets');
+    const currentValue = document.getElementById('input');
+    const previousValue = document.getElementById('result');
+    const errorOutput = document.getElementById('errors');
+    let operationValue = undefined;
 
     const theme = document.querySelector('.themes');
     function swapStyleSheet(sheet) {
@@ -26,27 +27,68 @@ function calculator() {
     })
 
     function roundResult(number) {
-        return Math.round(number * 100000) / 100000;
+        return Math.round(number * 1000000) / 1000000;
     }
-    function useClear() {
-        input.value = '';
-        firstNumber = '';
-        secondNumber = '';
-        currentOperator = '';
-        isFinish = false;
+    function clear() {
+        currentValue.value = '';
+        previousValue.textContent = '';
+        operation = undefined;
     }
-    function useErase() {
-        input.value = input.value.toString().slice(0, -1);
-        // if (secondNumber === '' && currentOperator === '') {
-        //     firstNumber = firstNumber.toString().slice(0, -1);
-        //     input.value = firstNumber;
-        // } else if (currentOperator !== '' && firstNumber !== '') {
-        //     secondNumber = secondNumber.toString().slice(0, -1);
-        //     input.value = secondNumber;
-        // } else if (currentOperator !== '') {
-        //     currentOperator = '';
-        // }
+    function erase() {
+        currentValue.value = currentValue.value.toString().slice(0, -1);
     }
+    function compute() {
+        let computation = null;
+        const prev = parseFloat(previousValue.textContent);
+        const current = parseFloat(currentValue.value);
+        if (isNaN(prev) || isNaN(current)) {
+            errorOutput.textContent = 'Please enter correct value';
+        }
+        switch (operationValue) {
+            case '+':
+                computation = roundResult(prev + current);
+                break
+            case '-':
+                computation = roundResult(prev - current);
+                break
+            case '*':
+                computation = roundResult(prev * current);
+                break
+            case '/':
+                computation = roundResult(prev / current);
+                break
+            default:
+                return
+        }
+        currentValue.value = computation;
+        operationValue = undefined;
+        previousValue.textContent = '';
+    }
+    numbers.forEach(number => {
+        number.addEventListener('click', () => {
+            errorOutput.textContent = '';
+            if (number.id === '.' && currentValue.value.includes('.')) return
+            currentValue.value += number.id;
+        })
+    })
+    operations.forEach(operation => {
+        operation.addEventListener('click', () => {
+            if (currentValue.value === '') return;
+            if (previousValue.textContent !== '') compute(); 
+            operationValue = operation.id
+            currentValue.value += operationValue;
+            previousValue.textContent = currentValue.value;
+            currentValue.value = '';
+        })
+    })
+    brackets.forEach(bracket => {
+        bracket.addEventListener('click', () => {
+            currentValue.value += bracket.id;
+        })
+    })
+    clearBtn.addEventListener('click', clear);
+    eraseBtn.addEventListener('click', erase);
+    equalBtn.addEventListener('click', compute);
 }
 
 calculator();

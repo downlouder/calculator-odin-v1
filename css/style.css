@@ -61,6 +61,14 @@ svg {
     width: 100%;
     border-bottom: 2px solid var(--fill-color);
 }
+#errors {
+    align-self: flex-end;
+    justify-self: flex-end;
+    margin-bottom: auto;
+    font-size: 20px;
+    max-width: 80%;
+    color: var(--result-color);
+}
 .last-result {
     color: var(--result-color);
     font-size: 24px;
