@@ -9,6 +9,7 @@ function calculator() {
     const previousValue = document.getElementById('result');
     const errorOutput = document.getElementById('errors');
     let operationValue = undefined;
+    let prevOperationValue = undefined;
 
     const theme = document.querySelector('.themes');
     function swapStyleSheet(sheet) {
@@ -32,7 +33,9 @@ function calculator() {
     function clear() {
         currentValue.value = '';
         previousValue.textContent = '';
-        operation = undefined;
+        errorOutput.textContent = '';
+        operationValue = undefined;
+        prevOperationValue = undefined;
     }
     function erase() {
         currentValue.value = currentValue.value.toString().slice(0, -1);
@@ -43,8 +46,9 @@ function calculator() {
         const current = parseFloat(currentValue.value);
         if (isNaN(prev) || isNaN(current)) {
             errorOutput.textContent = 'Please enter correct value';
+            previousValue.textContent = '';
         }
-        switch (operationValue) {
+        switch (prevOperationValue) {
             case '+':
                 computation = roundResult(prev + current);
                 break
@@ -52,16 +56,21 @@ function calculator() {
                 computation = roundResult(prev - current);
                 break
             case '*':
-                computation = roundResult(prev * current);
+                computation = roundResult(prev * (current));
                 break
             case '/':
-                computation = roundResult(prev / current);
+                computation = roundResult(prev / (current));
                 break
             default:
                 return
         }
+        if (!isFinite(computation)) {
+            errorOutput.textContent = 'You can\'t divide by 0';
+            return
+        }
         currentValue.value = computation;
         operationValue = undefined;
+        prevOperationValue = undefined;
         previousValue.textContent = '';
     }
     numbers.forEach(number => {
@@ -73,11 +82,19 @@ function calculator() {
     })
     operations.forEach(operation => {
         operation.addEventListener('click', () => {
+            operationValue = operation.id
+            if (prevOperationValue === '/' || prevOperationValue === '*') {
+                if (operationValue === '-') {
+                    currentValue.value = operationValue;
+                    return
+                }
+            }
             if (currentValue.value === '') return;
             if (previousValue.textContent !== '') compute(); 
-            operationValue = operation.id
             currentValue.value += operationValue;
             previousValue.textContent = currentValue.value;
+            prevOperationValue = operationValue;
+            operationValue = undefined;
             currentValue.value = '';
         })
     })
