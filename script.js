@@ -4,7 +4,7 @@ function calculator() {
     const equalBtn = document.querySelector('#equal');
     const eraseBtn = document.querySelector('#erase');
     const clearBtn = document.querySelector('#ac');
-    const brackets = document.querySelectorAll('.brackets');
+    const brackets = document.querySelector('.brackets');
     const currentValue = document.getElementById('input');
     const previousValue = document.getElementById('result');
     const errorOutput = document.getElementById('errors');
@@ -40,13 +40,36 @@ function calculator() {
     function erase() {
         currentValue.value = currentValue.value.toString().slice(0, -1);
     }
+    function addNumber(number) {
+        errorOutput.textContent = '';
+        if (number === '.' && currentValue.value.includes('.')) return
+        currentValue.value += number;
+    }
+    function addOperation(operation) {
+        operationValue = operation
+            if (prevOperationValue === '/' || prevOperationValue === '*') {
+                if (operationValue === '-') {
+                    currentValue.value = operationValue;
+                    return;
+                }
+            }
+            if (currentValue.value === '') return;
+            if (previousValue.textContent !== '') compute(); 
+            currentValue.value += operationValue;
+            previousValue.textContent = currentValue.value;
+            prevOperationValue = operationValue;
+            operationValue = undefined;
+            currentValue.value = '';
+    }
     function compute() {
         let computation = null;
         const prev = parseFloat(previousValue.textContent);
         const current = parseFloat(currentValue.value);
+        console.log(prev, current);
         if (isNaN(prev) || isNaN(current)) {
             errorOutput.textContent = 'Please enter correct value';
             previousValue.textContent = '';
+            return;
         }
         switch (prevOperationValue) {
             case '+':
@@ -61,51 +84,40 @@ function calculator() {
             case '/':
                 computation = roundResult(prev / (current));
                 break
+            case '%':
+                computation = roundResult(prev % current);
+                break
             default:
                 return
         }
+        console.log(computation);
         if (!isFinite(computation)) {
             errorOutput.textContent = 'You can\'t divide by 0';
             return
         }
         currentValue.value = computation;
-        operationValue = undefined;
         prevOperationValue = undefined;
         previousValue.textContent = '';
     }
     numbers.forEach(number => {
-        number.addEventListener('click', () => {
-            errorOutput.textContent = '';
-            if (number.id === '.' && currentValue.value.includes('.')) return
-            currentValue.value += number.id;
-        })
+        number.addEventListener('click', () => { addNumber(number.id) })
     })
     operations.forEach(operation => {
-        operation.addEventListener('click', () => {
-            operationValue = operation.id
-            if (prevOperationValue === '/' || prevOperationValue === '*') {
-                if (operationValue === '-') {
-                    currentValue.value = operationValue;
-                    return
-                }
-            }
-            if (currentValue.value === '') return;
-            if (previousValue.textContent !== '') compute(); 
-            currentValue.value += operationValue;
-            previousValue.textContent = currentValue.value;
-            prevOperationValue = operationValue;
-            operationValue = undefined;
-            currentValue.value = '';
-        })
-    })
-    brackets.forEach(bracket => {
-        bracket.addEventListener('click', () => {
-            currentValue.value += bracket.id;
-        })
+        operation.addEventListener('click', () => { addOperation(operation.id) })
     })
     clearBtn.addEventListener('click', clear);
     eraseBtn.addEventListener('click', erase);
     equalBtn.addEventListener('click', compute);
+    window.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter' || e.key === '=') {
+            compute();
+        } else if (e.key === 'Backspace') {
+            erase();
+        }
+        if (!e.key.match(/^[0-9\%\\*\\/\+.-]+$/g)) return;
+        else if (e.key === '+' || e.key === '-' || e.key === '/' || e.key === '*' || e.key === '%') addOperation(e.key);
+        else addNumber(e.key);
+    })
 }
 
 calculator();
