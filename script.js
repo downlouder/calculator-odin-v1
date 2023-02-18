@@ -47,7 +47,7 @@ function calculator() {
     }
     function addOperation(operation) {
         operationValue = operation
-            if (prevOperationValue === '/' || prevOperationValue === '*') {
+            if ((prevOperationValue === '/' || prevOperationValue === '*') && currentValue.value === '') {
                 if (operationValue === '-') {
                     currentValue.value = operationValue;
                     return;
